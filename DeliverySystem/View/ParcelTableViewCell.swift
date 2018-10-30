@@ -35,6 +35,7 @@ class ParcelTableViewCell: UITableViewCell {
         // Configure the view for the selected state
     }
 
+    // initializing default cell display
     func configureCellView () {
         
         recipientNameLabel.font = UIFont.boldSystemFont(ofSize: 14.0)
@@ -45,6 +46,7 @@ class ParcelTableViewCell: UITableViewCell {
         
     }
     
+    // updating cell's properties with parcel information.
     func configureCell (usingParcel parcel: Parcel) {
         
         let image: UIImage?
@@ -64,7 +66,7 @@ class ParcelTableViewCell: UITableViewCell {
         statusButton.setImage(image, for: .normal)
     }
     
-    
+    //call the delegate when status button is tapped
     @IBAction func statusButtonTapped(_ sender: Any) {
         delegate?.ParcelTableViewCell(didTappedbuttonOn: self)
     }

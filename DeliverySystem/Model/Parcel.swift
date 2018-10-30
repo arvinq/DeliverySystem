@@ -8,8 +8,10 @@
 
 import Foundation
 
+
 class Parcel: NSObject, Codable {
-    
+    //NSOBject to use index(of: ) on a collection
+    //codable for saving
     var recipientName: String = ""
     var deliveryAddress: String = ""
     var status: Status = .new
@@ -18,6 +20,7 @@ class Parcel: NSObject, Codable {
     var statusChangedDate: Date = Date()
     var deliveryDate: Date = Date()
     
+    //case iterable for using allItems property
     enum Status: Int, CaseIterable, Codable {
         case new, dispatched, forPickup, delivered
     }
@@ -36,6 +39,7 @@ class Parcel: NSObject, Codable {
         return dateFormatter
     }()
     
+    //returns title for each status 
     static func titleForStatus(_ status: Status) -> String {
         switch status {
             case .new: return PropertyKeys.newParcelDetailTitle

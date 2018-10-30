@@ -49,9 +49,9 @@ struct AlertView {
     }
     
     static func showDeleteAlert(on controller: UITableViewController, complete: @escaping (Int) -> () ) {
-        let alertController = UIAlertController(title: "Confirm Delete", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: PropertyKeys.alertDeleteConfirm, message: nil, preferredStyle: .actionSheet)
         let cancelAction = UIAlertAction(title: PropertyKeys.alertCancel, style: .cancel) { action in complete(0) }
-        let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { (action) in complete(1) }
+        let deleteAction = UIAlertAction(title: PropertyKeys.alertDelete, style: .destructive) { (action) in complete(1) }
         
         alertController.addAction(deleteAction)
         alertController.addAction(cancelAction)

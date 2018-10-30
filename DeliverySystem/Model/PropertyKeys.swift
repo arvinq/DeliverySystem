@@ -36,4 +36,6 @@ struct PropertyKeys {
     
     static let alertCancel = "Cancel"
     static let alertStatusSelection = "Select New Parcel Status"
+    static let alertDelete = "Delete"
+    static let alertDeleteConfirm = "Confirm Delete"
 }

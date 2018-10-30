@@ -51,8 +51,6 @@ class ParcelListTableViewController: UITableViewController {
     }
     
     // MARK: - Table view data source
-
-    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return Parcel.Status.allCases.count
     }
@@ -138,12 +136,12 @@ class ParcelListTableViewController: UITableViewController {
             parcelDetailTableVC.parcelDetailDelegate = self
             
             guard let tappedParcel = sender as? ParcelTableViewCell,
-            let indexPath = tableView.indexPath(for: tappedParcel),
-            let parcelStatus = parcelStatusForIndex(indexPath.section)  else { return }
+                  let indexPath = tableView.indexPath(for: tappedParcel),
+                  let parcelStatus = parcelStatusForIndex(indexPath.section)  else { return }
             
             tableView.deselectRow(at: indexPath, animated: true)
             
-            //save src variables (status and index) here
+            //save src variables (status and index) here before editing.
             sourceStatus = parcelStatus
             
             let parcel = parcelList.showParcels(forStatus: parcelStatus)[indexPath.row]
@@ -217,14 +215,14 @@ extension ParcelListTableViewController: ParcelDetailTableViewControllerDelegate
         controller.dismiss(animated: true, completion: nil)
     }
     
-    //there's an issue here. When you are trying to change a parcel from earlier status (higher on table) to later status (lower on table), its successful to do so by changing the data source and refreshing the tableView. But since we're looping, app will still find the obj in the later (destination) status. Now, when tableView.cellForRow is execute,  there's a tendency that the tableView function will return a nil and not execute saving down below.
+    //there's an issue here. When you are trying to change a parcel from earlier status (higher on table) to later status (lower on table), its successful to do so by changing the data source and refreshing the tableView. But since we're looping, app will still find the obj in the later (destination) status. Now, when tableView.cellForRow is executed,  there's a tendency that the tableView function will return a nil and not execute saving down below.
     // the fix here is to try to have a state that when changing of the status has already been done for the first time for the particular parcel, we don't execute the same block of code again.
     func parcelDetailTableViewController(_ controller: ParcelDetailTableViewController, didFinishEditing parcel: Parcel) {
         var isParcelConfigured = false
         
         for status in Parcel.Status.allCases {
                 if let parcelEditRowIndex = parcelList.showParcels(forStatus: status).index(of: parcel) {
-                    if !isParcelConfigured { //check if the same parcel has already been configured. If yes. then don't configure anymore when the same parcel is found
+                    if !isParcelConfigured { //check if the same parcel has already been configured. If yes. then don't configure anymore when the same parcel is found from other section
                         
                         let indexPath = IndexPath(row: parcelEditRowIndex, section: status.rawValue)
                         
@@ -265,6 +263,7 @@ extension ParcelListTableViewController: ParcelDetailTableViewControllerDelegate
             
             let indexPath = IndexPath(row: parcelDeleteRowIndex, section: parcel.status.rawValue)
             
+            //shows an alert and executes the @escaping closure based on the user's choice
             AlertView.showDeleteAlert(on: controller) { choice in
                 if choice == 1 {
                     self.parcelList.deleteDelivery(parcel, inStatus: parcel.status, at: parcelDeleteRowIndex)
@@ -287,8 +286,8 @@ extension ParcelListTableViewController: ParcelDetailTableViewControllerDelegate
     
     
     func parcelDetailTableViewControllerDidCancel(_ controller: ParcelDetailTableViewController) {
-        controller.dismiss(animated: true, completion: nil) //for add
-        navigationController?.popViewController(animated: true) //for edit
+        controller.dismiss(animated: true, completion: nil) //for add. presenting modally so the controller dismisses itself
+        navigationController?.popViewController(animated: true) //for edit. show segue for when a vc is pushed and popped in a nc
     }
     
     

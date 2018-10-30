@@ -10,12 +10,14 @@ import Foundation
 
 class ParcelList: Codable {
     
+    // all of the sections represented as a collection per section
     var newParcelList: [Parcel] = []
     var dispatchedParcelList: [Parcel] = []
     var forPickupParcelList: [Parcel] = []
     var deliveredParcelList: [Parcel] = []
     
     init() {
+        //sample data
         let newSampleParcel = Parcel()
         newSampleParcel.status = .new
         newSampleParcel.statusChangedDate = Date()
@@ -58,7 +60,7 @@ class ParcelList: Codable {
         
     }
     
-    
+    //retrieve each of the parcelList based on the status passed
     func showParcels(forStatus status: Parcel.Status) -> [Parcel] {
         switch status {
             case .new: return newParcelList
@@ -68,6 +70,7 @@ class ParcelList: Codable {
         }
     }
     
+    //create a new parcel object
     func newParcel() -> Parcel {
         let parcel = Parcel()
         
@@ -75,7 +78,7 @@ class ParcelList: Codable {
         return parcel
     }
     
-    
+    //add a parel in the sections collection based on the parcel status and index in that parcel if index is not passed
     func addDelivery (_ parcel: Parcel, inStatus parcelStatus: Parcel.Status, at index: Int = -1) {
         switch parcelStatus {
             case .new:
@@ -93,6 +96,7 @@ class ParcelList: Codable {
         }
     }
     
+    //remove a parcel from the collection section based on the status and index
     func deleteDelivery (_ parcel: Parcel, inStatus parcelStatus: Parcel.Status, at index: Int) {
         switch parcelStatus {
             case .new: newParcelList.remove(at: index)
@@ -102,6 +106,7 @@ class ParcelList: Codable {
         }
     }
     
+    //moving a parcel from one section to destination section
     func changeDelivery (_ parcel: Parcel, fromSrcStatus srcStatus: Parcel.Status, atSrcIndex srcIndex: Int,
                          toDestStatus destStatus: Parcel.Status, atDestIndex destIndex: Int) {
         
@@ -114,13 +119,15 @@ class ParcelList: Codable {
     static let ArchiveUrl = DocumentDirectory.appendingPathComponent(PropertyKeys.pathComponent)
         .appendingPathExtension(PropertyKeys.pathExtension)
     
+    //saving parcels in documents directory
     static func saveParcelsToFile(parcels: ParcelList) {
         let pListEncoder = PropertyListEncoder()
         let parcelsData = try? pListEncoder.encode(parcels)
         
         try? parcelsData?.write(to: ArchiveUrl, options: .noFileProtection)
     }
-    
+    //load parcels from document directory. Decoding the data requires you to pass the object type
+    //and not the instance or object name hence the call to .self
     static func loadParcelsFromFile() -> ParcelList? {
         let groupedParcels: ParcelList?
         

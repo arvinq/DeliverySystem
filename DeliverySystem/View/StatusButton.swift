@@ -22,6 +22,8 @@ class StatusButton: UIButton {
         super.awakeFromNib()
         
         // autolayout solution
+        // initialization of custom status button. where we are giving
+        // intrinsic height for each button
         self.translatesAutoresizingMaskIntoConstraints = false
         self.widthAnchor.constraint(equalToConstant: 50).isActive = true
         self.heightAnchor.constraint(equalToConstant: 50).isActive = true       

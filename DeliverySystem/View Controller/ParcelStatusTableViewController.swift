@@ -40,6 +40,8 @@ class ParcelStatusTableViewController: UITableViewController {
         let status = Parcel.Status.allCases[indexPath.row]
         cell.textLabel?.text = Parcel.titleForStatus(status)
         
+        //this is when the cell is being returned. if the selected status is equal to parcel status from
+        //previous vc or from tapped row.
         if status == parcelStatus {
             cell.accessoryType = .checkmark
         } else {
@@ -73,9 +75,6 @@ class ParcelStatusTableViewController: UITableViewController {
                 tableView.reloadData()
             }
         }
-        
-        
-        
         
         tableView.deselectRow(at: indexPath, animated: true)
         
