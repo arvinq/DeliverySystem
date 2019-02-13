@@ -8,10 +8,11 @@
 
 import Foundation
 
-
+/**
+ A parcel object
+ - Note: NSOBject to use index(of: ) on a collection. Codable for saving
+ */
 class Parcel: NSObject, Codable {
-    //NSOBject to use index(of: ) on a collection
-    //codable for saving
     var recipientName: String = ""
     var deliveryAddress: String = ""
     var status: Status = .new
@@ -20,7 +21,7 @@ class Parcel: NSObject, Codable {
     var statusChangedDate: Date = Date()
     var deliveryDate: Date = Date()
     
-    //case iterable for using allItems property
+    /** case iterable for using .allItems property */
     enum Status: Int, CaseIterable, Codable {
         case new, dispatched, forPickup, delivered
     }
@@ -39,7 +40,11 @@ class Parcel: NSObject, Codable {
         return dateFormatter
     }()
     
-    //returns title for each status 
+    /**
+     Returns title for each status
+     - Parameter status: The status from which you want a title to be returned
+     - Returns: a string representing the title
+     */
     static func titleForStatus(_ status: Status) -> String {
         switch status {
             case .new: return PropertyKeys.newParcelDetailTitle
@@ -49,7 +54,7 @@ class Parcel: NSObject, Codable {
         }
     }
     
-    //return a 5 digit random tracking number
+    /** Returns a 5 digit random tracking number */
     static func generateTrackingNumber() -> String{
         let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         return String( (0...4).map { _ in letters.randomElement()!  } )

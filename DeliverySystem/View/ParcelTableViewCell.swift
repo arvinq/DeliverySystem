@@ -8,10 +8,12 @@
 
 import UIKit
 
+/// protocol providing method that is called when button inside cell is tapped
 protocol ParcelTableViewCellDelegate: class {
     func ParcelTableViewCell(didTappedbuttonOn cell: ParcelTableViewCell)
 }
 
+/// Parcel's own table view cell class
 class ParcelTableViewCell: UITableViewCell {
 
     
@@ -35,7 +37,7 @@ class ParcelTableViewCell: UITableViewCell {
         // Configure the view for the selected state
     }
 
-    // initializing default cell display
+    /// Initializing default cell display
     func configureCellView () {
         
         recipientNameLabel.font = UIFont.boldSystemFont(ofSize: 14.0)
@@ -46,7 +48,10 @@ class ParcelTableViewCell: UITableViewCell {
         
     }
     
-    // updating cell's properties with parcel information.
+    /**
+     Updating cell's properties with parcel information.
+     - Parameter parcel: containing the properties to be displayed
+     */
     func configureCell (usingParcel parcel: Parcel) {
         
         let image: UIImage?
@@ -55,7 +60,7 @@ class ParcelTableViewCell: UITableViewCell {
         recipientAddressLabel.text = parcel.deliveryAddress
         statusChangeDateLabel.text = Parcel.listDateFormatter.string(from: parcel.statusChangedDate)
         
-        
+        /// image on status button will be determined based on parcel's status
         switch parcel.status {
             case .new: image = UIImage(named: "new.png")
             case .dispatched: image = UIImage(named: "dispatch.png")
@@ -66,7 +71,7 @@ class ParcelTableViewCell: UITableViewCell {
         statusButton.setImage(image, for: .normal)
     }
     
-    //call the delegate when status button is tapped
+    /// call the delegate when status button is tapped
     @IBAction func statusButtonTapped(_ sender: Any) {
         delegate?.ParcelTableViewCell(didTappedbuttonOn: self)
     }

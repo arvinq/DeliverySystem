@@ -8,16 +8,17 @@
 
 import Foundation
 
+/** ParcelList acts as the data source and provides data and methods for handling parcels */
 class ParcelList: Codable {
     
-    // all of the sections represented as a collection per section
+    /// all of the sections represented as a collection per section
     var newParcelList: [Parcel] = []
     var dispatchedParcelList: [Parcel] = []
     var forPickupParcelList: [Parcel] = []
     var deliveredParcelList: [Parcel] = []
     
     init() {
-        //sample data
+        //some sample data
         let newSampleParcel = Parcel()
         newSampleParcel.status = .new
         newSampleParcel.statusChangedDate = Date()
@@ -53,14 +54,18 @@ class ParcelList: Codable {
         deliveredSampleParcel.deliveryDate = Date()
         
         
-        addDelivery(newSampleParcel, inStatus: newSampleParcel.status)
-        addDelivery(dispatchedSampleParcel, inStatus: dispatchedSampleParcel.status)
-        addDelivery(pickupSampleParcel, inStatus: pickupSampleParcel.status)
-        addDelivery(deliveredSampleParcel, inStatus: deliveredSampleParcel.status)
         
+        addDelivery(dispatchedSampleParcel, inStatus: dispatchedSampleParcel.status)
+        addDelivery(newSampleParcel, inStatus: newSampleParcel.status)
+        addDelivery(deliveredSampleParcel, inStatus: deliveredSampleParcel.status)
+        addDelivery(pickupSampleParcel, inStatus: pickupSampleParcel.status)
     }
     
-    //retrieve each of the parcelList based on the status passed
+    /**
+     Retrieve each of the parcelList based on the status passed
+     - Parameter status: Status of the list that you want to return
+     - Returns: Collection of parcel depending on the status passed
+     */
     func showParcels(forStatus status: Parcel.Status) -> [Parcel] {
         switch status {
             case .new: return newParcelList
@@ -70,7 +75,11 @@ class ParcelList: Codable {
         }
     }
     
-    //create a new parcel object
+    /**
+     Creates an instance of the new parcel and add it to new list as new instance
+     has a status of new
+     - Returns: the new instance
+     */
     func newParcel() -> Parcel {
         let parcel = Parcel()
         
@@ -78,7 +87,13 @@ class ParcelList: Codable {
         return parcel
     }
     
-    //add a parel in the sections collection based on the parcel status and index in that parcel if index is not passed
+    /**
+     Add a parcel in the sections collection based on the parcel status and index in that parcel if index is not passed
+     - Parameters:
+         - parcel: parcel to be added
+         - parcelStatus: determines the list where the parcel is added
+         - index: if passed, insert at a specific location else insert at the beginning
+     */
     func addDelivery (_ parcel: Parcel, inStatus parcelStatus: Parcel.Status, at index: Int = -1) {
         switch parcelStatus {
             case .new:
@@ -96,7 +111,13 @@ class ParcelList: Codable {
         }
     }
     
-    //remove a parcel from the collection section based on the status and index
+    /**
+     Remove a parcel from the collection section based on the status and index
+     - Parameters:
+         - parcel: parcel to be removed (not used)
+         - parcelStatus: determines the list where the parcel is going to be removed
+         - index: location on the specific list where the parcel is removed
+     */
     func deleteDelivery (_ parcel: Parcel, inStatus parcelStatus: Parcel.Status, at index: Int) {
         switch parcelStatus {
             case .new: newParcelList.remove(at: index)
@@ -106,7 +127,15 @@ class ParcelList: Codable {
         }
     }
     
-    //moving a parcel from one section to destination section
+    /**
+     Calls deleteDelivery() to remove the parcel from list then calls addDelivery() to add the parcel to the new list creating a mechanism in moving the parcel across lists.
+     - Parameters:
+         - parcel: parcel to be moved
+         - srcStatus: source list
+         - srcIndex: source index
+         - destStatus: destination list
+         - destIndex: destination index
+     */
     func changeDelivery (_ parcel: Parcel, fromSrcStatus srcStatus: Parcel.Status, atSrcIndex srcIndex: Int,
                          toDestStatus destStatus: Parcel.Status, atDestIndex destIndex: Int) {
         
@@ -114,20 +143,28 @@ class ParcelList: Codable {
         addDelivery(parcel, inStatus: destStatus, at: destIndex)
     }
     
-    
+    // provides the document Directory and archive url where the data will be saved
     static let DocumentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     static let ArchiveUrl = DocumentDirectory.appendingPathComponent(PropertyKeys.pathComponent)
         .appendingPathExtension(PropertyKeys.pathExtension)
     
-    //saving parcels in documents directory
+    /**
+     Saving parcels shown in parcel list page into documents directory.
+     - Parameters:
+        - parcels: list to be saved
+     */
     static func saveParcelsToFile(parcels: ParcelList) {
         let pListEncoder = PropertyListEncoder()
         let parcelsData = try? pListEncoder.encode(parcels)
         
         try? parcelsData?.write(to: ArchiveUrl, options: .noFileProtection)
     }
-    //load parcels from document directory. Decoding the data requires you to pass the object type
-    //and not the instance or object name hence the call to .self
+    
+    /**
+     Load parcels from document directory. Decoding the data requires you to pass the object type
+     and not the instance or object name hence the call to .self
+     - Returns: A parcel list. Documents Directory may have a list saved or none hence optional
+     */
     static func loadParcelsFromFile() -> ParcelList? {
         let groupedParcels: ParcelList?
         

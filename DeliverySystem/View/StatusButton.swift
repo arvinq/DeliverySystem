@@ -8,9 +8,13 @@
 
 import UIKit
 
+/**
+ Custom button for the status. This includes autolayout solution in awakeFromNib()
+ to give the button an intrinsic width and height
+ */
 class StatusButton: UIButton {
 
-    /*
+    /**
     // Only override draw() if you perform custom drawing.
     // An empty implementation adversely affects performance during animation.
     override func draw(_ rect: CGRect) {
@@ -21,9 +25,9 @@ class StatusButton: UIButton {
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        // autolayout solution
-        // initialization of custom status button. where we are giving
-        // intrinsic height for each button
+        /// autolayout solution
+        /// initialization of custom status button. where we are giving
+        /// intrinsic height for each button
         self.translatesAutoresizingMaskIntoConstraints = false
         self.widthAnchor.constraint(equalToConstant: 50).isActive = true
         self.heightAnchor.constraint(equalToConstant: 50).isActive = true       

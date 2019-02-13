@@ -15,7 +15,7 @@ class ParcelListTableViewController: UITableViewController {
     var sourceStatus: Parcel.Status?
     var destinationStatus: Parcel.Status?
     
-    
+    /// used init(coder: NSCoder) to initialize parcelList
     required init?(coder aDecoder: NSCoder) {
         //if file is present, load from file, else run list init
         if let parcelListFromFile = ParcelList.loadParcelsFromFile() {
@@ -31,6 +31,7 @@ class ParcelListTableViewController: UITableViewController {
         
     }
     
+    /// whenever the views appear, set the table view's properties and the cell's height dynamically
     override func viewWillAppear(_ animated: Bool) {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.title = PropertyKeys.parcelListTitle
@@ -45,6 +46,7 @@ class ParcelListTableViewController: UITableViewController {
     /**
      Get the parcel status from the rawValue representation of the index passed.
      - Parameter index: Integer that usually represents the section from the tableView
+     - Returns: Status of the parcel from parcel property based on the index passed
      */
     func parcelStatusForIndex(_ index: Int) -> Parcel.Status?{
         return Parcel.Status(rawValue: index)
@@ -56,7 +58,8 @@ class ParcelListTableViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if let parcelStatus = parcelStatusForIndex(section) { //number of rows are passed per section.
+        /// retrieve the section first. and from the section, we passed the number of rows per section.
+        if let parcelStatus = parcelStatusForIndex(section) {
             return parcelList.showParcels(forStatus: parcelStatus).count
         } else {
             return 0
@@ -65,7 +68,7 @@ class ParcelListTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         guard let parcelStatus = parcelStatusForIndex(section) else { return nil }
-        
+            /// returns title for each status
             switch parcelStatus {
                 case .new: return PropertyKeys.newStatusTitle
                 case .dispatched: return PropertyKeys.dispatchedStatusTitle
@@ -90,20 +93,21 @@ class ParcelListTableViewController: UITableViewController {
     }
 
     
-    // Override to support editing the table view.
+    /// Overriden to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             
-            // Delete the row from the data source
+            /// Delete the row from the data source
             guard let parcelStatus = parcelStatusForIndex(indexPath.section) else { return }
             let parcel = parcelList.showParcels(forStatus: parcelStatus)[indexPath.row]
             
-            //call the alert. if user chooses an option, call the escaping closure
+            /// call the alert. if user chooses an option, call the escaping closure
             AlertView.showDeleteAlert(on: self) { choice in
-                if choice == 1 { //as configured in showDeleteAlert, do this on confirm AlertAction
+                if choice == 1 { /// as configured in showDeleteAlert, do this on confirm AlertAction
                     self.parcelList.deleteDelivery(parcel, inStatus: parcelStatus, at: indexPath.row)
                     tableView.deleteRows(at: [indexPath], with: .fade)
                     
+                    ///we call archive save since we amended parcel's presence
                     ParcelList.saveParcelsToFile(parcels: self.parcelList)
                 }
             }
@@ -118,10 +122,10 @@ class ParcelListTableViewController: UITableViewController {
     
     // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    /// In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+        /// Get the new view controller using segue.destination.
+        /// Pass the selected object to the new view controller.
         if segue.identifier == PropertyKeys.addParcelSegue {
             guard let navController = segue.destination as? UINavigationController,
                   let parcelDetailTableVC = navController.topViewController as? ParcelDetailTableViewController else { return }
@@ -141,7 +145,7 @@ class ParcelListTableViewController: UITableViewController {
             
             tableView.deselectRow(at: indexPath, animated: true)
             
-            //save src variables (status and index) here before editing.
+            /// we are saving the src variables (status and index) here before editing .
             sourceStatus = parcelStatus
             
             let parcel = parcelList.showParcels(forStatus: parcelStatus)[indexPath.row]
@@ -215,14 +219,17 @@ extension ParcelListTableViewController: ParcelDetailTableViewControllerDelegate
         controller.dismiss(animated: true, completion: nil)
     }
     
-    //there's an issue here. When you are trying to change a parcel from earlier status (higher on table) to later status (lower on table), its successful to do so by changing the data source and refreshing the tableView. But since we're looping, app will still find the obj in the later (destination) status. Now, when tableView.cellForRow is executed,  there's a tendency that the tableView function will return a nil and not execute saving down below.
-    // the fix here is to try to have a state that when changing of the status has already been done for the first time for the particular parcel, we don't execute the same block of code again.
+    /**
+     There's an issue here. When you are trying to change a parcel from earlier status (higher on table) to later status (lower on table), its successful to do so by changing the data source and refreshing the tableView. But since we're looping, app will still find the obj in the later (destination) status. Now, when tableView.cellForRow is executed,  there's a tendency that the tableView function will return a nil and not execute saving down below.
+     
+     The fix here is to try to have a state that when changing of the status has already been done for the first time for the particular parcel, we don't execute the same block of code again.
+     */
     func parcelDetailTableViewController(_ controller: ParcelDetailTableViewController, didFinishEditing parcel: Parcel) {
         var isParcelConfigured = false
         
         for status in Parcel.Status.allCases {
                 if let parcelEditRowIndex = parcelList.showParcels(forStatus: status).index(of: parcel) {
-                    if !isParcelConfigured { //check if the same parcel has already been configured. If yes. then don't configure anymore when the same parcel is found from other section
+                    if !isParcelConfigured { /// check if the same parcel has already been configured. If yes. then don't configure anymore when the same parcel is found from other section
                         
                         let indexPath = IndexPath(row: parcelEditRowIndex, section: status.rawValue)
                         
@@ -231,11 +238,11 @@ extension ParcelListTableViewController: ParcelDetailTableViewControllerDelegate
                         
                         cell.configureCell(usingParcel: parcel)
                         
-                        //if the user has also changed the status, we need to move the parcel to right status in the list
+                        /// if the user has also changed the status, we need to move the parcel to right status in the list
                         if let sourceStatus = sourceStatus,
-                            sourceStatus != parcel.status { //if there's no change in the status, then we don't move the parcel
+                            sourceStatus != parcel.status { /// if there's no change in the status, then we don't move the parcel
                             
-                            //the number parcel in the new status should be the destination index
+                            /// the number parcel in the new status should be the destination index
                             let destIndex = parcelList.showParcels(forStatus: parcel.status).count
                             
                             
@@ -244,7 +251,7 @@ extension ParcelListTableViewController: ParcelDetailTableViewControllerDelegate
                         
                         }
                         
-                        // since the parcel we're working with has already been moved, we also move the source status together with it
+                        /// since the parcel we're working with has already been moved, we also move the source status together with it
                         self.sourceStatus = parcel.status
                         isParcelConfigured = true
                         tableView.reloadData()
@@ -258,12 +265,19 @@ extension ParcelListTableViewController: ParcelDetailTableViewControllerDelegate
         navigationController?.popViewController(animated: true)
     }
     
+    /**
+     shows an alert and executes the @escaping closure based on the user's choice. If choice is 1, then we call
+     dataSource's deleteDelivery() then eventually calling the parcelsave to save the changes in the archive
+     - Parameters:
+         - controller: ParcelDetailTableViewController
+         - parcel: parcel to be deleted
+     */
     func parcelDetailTableViewController(_ controller: ParcelDetailTableViewController, willDelete parcel: Parcel) {
         if let parcelDeleteRowIndex = parcelList.showParcels(forStatus: parcel.status).index(of: parcel) {
             
             let indexPath = IndexPath(row: parcelDeleteRowIndex, section: parcel.status.rawValue)
             
-            //shows an alert and executes the @escaping closure based on the user's choice
+            /// calls the showDeleteAlert with the escaping closure. Choice is returned based on the user's selection
             AlertView.showDeleteAlert(on: controller) { choice in
                 if choice == 1 {
                     self.parcelList.deleteDelivery(parcel, inStatus: parcel.status, at: parcelDeleteRowIndex)
@@ -284,10 +298,14 @@ extension ParcelListTableViewController: ParcelDetailTableViewControllerDelegate
         
     }
     
-    
+    /**
+     Cancelling and dismissing the controller
+     - controller.dismiss is used for add. presenting modally so the controller dismisses itself
+     - navigationController.popViewController is used for edit. show segue for when a vc is pushed and popped in a nc
+     */
     func parcelDetailTableViewControllerDidCancel(_ controller: ParcelDetailTableViewController) {
-        controller.dismiss(animated: true, completion: nil) //for add. presenting modally so the controller dismisses itself
-        navigationController?.popViewController(animated: true) //for edit. show segue for when a vc is pushed and popped in a nc
+        controller.dismiss(animated: true, completion: nil) ///
+        navigationController?.popViewController(animated: true) ///
     }
     
     

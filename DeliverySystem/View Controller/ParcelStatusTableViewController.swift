@@ -14,8 +14,10 @@ protocol ParcelStatusTableViewControllerDelegate: class {
 class ParcelStatusTableViewController: UITableViewController {
 
     weak var parcelStatusDelegate: ParcelStatusTableViewControllerDelegate?
-    var parcelStatus: Parcel.Status? //the parcel status that is currently changed (not yet saved)
-    var savedParcelStatus: Parcel.Status? //the saved parcel status 
+    /// the parcel status that is currently changed (not yet saved)
+    var parcelStatus: Parcel.Status?
+    /// the saved parcel status
+    var savedParcelStatus: Parcel.Status?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,8 +42,8 @@ class ParcelStatusTableViewController: UITableViewController {
         let status = Parcel.Status.allCases[indexPath.row]
         cell.textLabel?.text = Parcel.titleForStatus(status)
         
-        //this is when the cell is being returned. if the selected status is equal to parcel status from
-        //previous vc or from tapped row.
+        /// this is when the cell is being returned. if the selected status is equal to parcel status
+        /// from previous vc or from tapped row.
         if status == parcelStatus {
             cell.accessoryType = .checkmark
         } else {
@@ -59,12 +61,12 @@ class ParcelStatusTableViewController: UITableViewController {
         
         let status = Parcel.Status.allCases[indexPath.row]
         
-        //if parcelStatus is not new, and status is new, don't allow to select
-        //if parcelStatus is not new and status is not new, just allow
-        //if parcelStatus is new  just select
+        /// if parcelStatus is not new, and status is new, don't allow to select
+        /// if parcelStatus is not new and status is not new, just allow
+        /// if parcelStatus is new  just select
         
-        //if savedStatus is new, its ok to select anything including new
-        //if savedStatus is not new, its ok to select anything except new
+        /// if savedStatus is new, its ok to select anything including new
+        /// if savedStatus is not new, its ok to select anything except new
         
         if savedParcelStatus == .new {
             parcelStatus = status
@@ -80,6 +82,7 @@ class ParcelStatusTableViewController: UITableViewController {
         
     }
     
+    /// calls the delegate method and passes the status selected
     @IBAction func doneButtonTapped(_ sender: Any) {
         guard let parcelStatus = parcelStatus else { return }
         parcelStatusDelegate?.parcelStatusTableViewController(self, didSelect: parcelStatus)

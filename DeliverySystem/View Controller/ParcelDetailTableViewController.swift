@@ -39,8 +39,11 @@ class ParcelDetailTableViewController: UITableViewController {
     var parcelList: ParcelList?
     var parcelStatus: Parcel.Status?
     
+    // determins if the datePicker is hidden or not
     var isStatusChangedDatePickerHidden: Bool = true
     var isDeliveryDatePickerHidden: Bool = true
+    
+    // indexPaths to easily access certain rows in table
     var statusChangedDateIndexPath: IndexPath = IndexPath(row: 1, section: 1)
     var deliveryDateIndexPath: IndexPath = IndexPath(row: 2, section: 2)
     var notesTextViewIndexPath: IndexPath = IndexPath(row: 0, section: 3)
@@ -75,6 +78,10 @@ class ParcelDetailTableViewController: UITableViewController {
     
     //MARK: - Helper Methods
     
+    /**
+     Configure the parcel status and the text in status' label
+     - Parameter status: status to be used
+     */
     func configureCurrentStatus(with status: Parcel.Status) {
         parcelStatus = status
         
@@ -82,7 +89,7 @@ class ParcelDetailTableViewController: UITableViewController {
         statusLabel.text = title
     }
     
-    //configure the status changed date.
+    /// configure the properties of the status change date.
     func configureInitialDate() {
         
        statusChangedDatePicker.date = Date()
@@ -91,7 +98,10 @@ class ParcelDetailTableViewController: UITableViewController {
         configureStatusDateViews()
     }
     
-    //update the form using the parcel passed.
+    /**
+     update the form using the parcel passed.
+     - Parameter parcel: contains the details to update the form
+     */
     func updateForm(with parcel: Parcel) {
         
         trackingNumberTextField.text = parcel.trackingNumber
@@ -109,7 +119,7 @@ class ParcelDetailTableViewController: UITableViewController {
         
     }
     
-    // views whose state should be configured depending on the status and on edit/add mode
+    /// views whose state should be configured depending on the status and on edit/add mode
     func updateViewState() {
         let recipientText = recipientNameTextField.text ?? ""
         let addressText = recipientAddressTextField.text ?? ""
@@ -117,7 +127,7 @@ class ParcelDetailTableViewController: UITableViewController {
         let deliveryDateText = deliveryDateLabel.text ?? ""
         
         
-        //configuring state based on parcel status
+        /// configuring state based on parcel status
         if statusLabel.text != PropertyKeys.newParcelDetailTitle {
             saveButton.isEnabled = !recipientText.isEmpty && !addressText.isEmpty
                                     && !trackNoText.isEmpty && !deliveryDateText.isEmpty
@@ -133,7 +143,7 @@ class ParcelDetailTableViewController: UITableViewController {
         }
         
         
-        //configuring state in terms of user action
+        /// configuring state in terms of user action
         if let _ = parcelToEdit {
             deleteButton.isEnabled = true
         } else {
@@ -142,8 +152,9 @@ class ParcelDetailTableViewController: UITableViewController {
     }
     
     
-    //separated both status date and delivery date to properly listen to actions triggered on
-    //each of its own date picker
+    // separated both status date and delivery date updates to properly
+    // listen to actions triggered on each of its own date picker
+    
     func configureStatusDateViews() {
         statusChangedDateLabel.text = Parcel.detailDateFormatter.string(from: statusChangedDatePicker.date)
         
@@ -205,19 +216,19 @@ class ParcelDetailTableViewController: UITableViewController {
     }
     
     //MARK: - IBActions
-    //this is for when a textfield's value has changed. Editing Change event
+    /// this is for when a textfield's value has changed. Editing Change event
     @IBAction func textEditingChange(_ sender: Any) {
         updateViewState()
     }
     
-    //generate tracking number and assign it to trackingNumber field
+    /// generate tracking number and assign it to trackingNumber field
     @IBAction func generateButtonTapped(_ sender: Any) {
         let randomTrackingNumber = Parcel.generateTrackingNumber()
         trackingNumberTextField.text = randomTrackingNumber
         updateViewState()
     }
     
-    
+    /// save the parcel based on the control's values
     @IBAction func saveButtonTapped(_ sender: Any) {
       
         var isEditMode = false
@@ -252,7 +263,7 @@ class ParcelDetailTableViewController: UITableViewController {
         
         parcel.status = parcelStatus
         
-        
+        /// calls the appropriate delegate method
         if isEditMode {
             parcelDetailDelegate?.parcelDetailTableViewController(self, didFinishEditing: parcel)
         } else {
@@ -261,29 +272,29 @@ class ParcelDetailTableViewController: UITableViewController {
         
     }
     
+    /// called when trash can is tapped. calls willDelete delegate method
     @IBAction func deleteButtonTapped(_ sender: Any) {
         guard let parcel = parcelToEdit else { return }
         parcelDetailDelegate?.parcelDetailTableViewController(self, willDelete: parcel)
     }
     
     
-    
-    
     @IBAction func cancelButtonTapped(_ sender: Any) {
         parcelDetailDelegate?.parcelDetailTableViewControllerDidCancel(self)
     }
     
+    /// when status is changed
     @IBAction func statusDatePickerValueChanged(_ sender: Any) {
         configureStatusDateViews()
     }
     
-    //state is needed to be updated because changing delivery constitutes a button state configuration
+    /// state is needed to be updated because changing delivery constitutes a button state configuration
     @IBAction func deliveryDatePickerValueChanged(_ sender: Any) {
         configureDeliveryDateViews()
         updateViewState()
     }
     
-    
+    /// this is for changing the status of the parcel.
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == PropertyKeys.selectStatusSegue {
             guard let destinationVC = segue.destination as? ParcelStatusTableViewController,
@@ -295,7 +306,7 @@ class ParcelDetailTableViewController: UITableViewController {
         }
     }
     
-    //check if segue should be performed or not. If it is in edit mode, then we perform segue.
+    /// check if segue should be performed or not. If it is in edit mode, then we perform segue.
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
         guard identifier == PropertyKeys.selectStatusSegue,
               let _ = parcelToEdit else { return false }
@@ -307,7 +318,7 @@ class ParcelDetailTableViewController: UITableViewController {
 //MARK: - EXTENSIONS
 extension ParcelDetailTableViewController: UITextFieldDelegate {
     
-    //resigning firstResponder or closing keyboard when return key is pressed
+    /// resigning firstResponder or closing keyboard when return key is pressed
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
@@ -331,13 +342,18 @@ extension ParcelDetailTableViewController: UITextFieldDelegate {
 }
 
 extension ParcelDetailTableViewController {
-    //separated the keyboard additions.
-    func registerForKeyboardNotification() {  //adding observers for when a keyboard will show or not.
+    /// separated the keyboard additions.
+    
+    /// adding observers for when a keyboard will show or not.
+    func registerForKeyboardNotification() {
         NotificationCenter.default.addObserver(self, selector: #selector(ParcelDetailTableViewController.keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         
         NotificationCenter.default.addObserver(self, selector: #selector(ParcelDetailTableViewController.keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
+    /**
+     modifies the tableView's content insets and scroll indicator inset whenever the keyboard is shown on screen
+     */
     @objc func keyboardWillShow(_ notification: Notification) {
         //get the keyboardFrameEndInfo from userInfo.
         guard let notificationUserInfo = notification.userInfo,
@@ -350,13 +366,14 @@ extension ParcelDetailTableViewController {
         tableView.contentInset = contentInset
         tableView.scrollIndicatorInsets = contentInset
         
+        // if notes is first responder, then when we show keyboard, we scroll to keyboard's indexPath
         if notesTextView.isFirstResponder {
-            //if notes is first responder, then when we show keyboard, we scroll to keyboard's indexPath
             tableView.scrollToRow(at: notesTextViewIndexPath, at: .top, animated: true)
         }
         
     }
-    //once keyboard has hidden, return back to default content insets.
+    
+    ///once keyboard has hidden, return back to default content insets.
     @objc func keyboardWillHide(_ notification: Notification) {
         let contentInset = UIEdgeInsets.zero
         tableView.contentInset = contentInset
@@ -365,6 +382,7 @@ extension ParcelDetailTableViewController {
 }
 
 extension ParcelDetailTableViewController: ParcelStatusTableViewControllerDelegate {
+    /// the delegate method called when a status has been selected
     func parcelStatusTableViewController(_ controller: ParcelStatusTableViewController, didSelect status: Parcel.Status) {
         guard let parcel = parcelToEdit else { return }
         
@@ -379,7 +397,8 @@ extension ParcelDetailTableViewController: ParcelStatusTableViewControllerDelega
 }
 
 extension UITextView {
-    //adding the done button on the keyboard. This shows Notes is first responder.
+    
+    /// adding the done button on the keyboard. This shows Notes is first responder.
     func addDoneButton() {
         let keyboardToolbar = UIToolbar() //adds a toolbar at the top of the keyboard.
         keyboardToolbar.sizeToFit()
@@ -389,4 +408,5 @@ extension UITextView {
         keyboardToolbar.items = [flexBarButton, doneBarButton]
         self.inputAccessoryView = keyboardToolbar //line that adds this toolbar when notes view is the first responder.
     }
+    
 }

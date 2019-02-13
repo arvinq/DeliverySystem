@@ -8,6 +8,7 @@
 
 import Foundation
 
+/** List of constants used in the application */
 struct PropertyKeys {
     static let parcelCellIdentifier = "parcelIdentifier"
     static let parcelStatusIdentifier = "parcelStatusIdentifier"
